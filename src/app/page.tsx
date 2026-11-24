@@ -1,3 +1,4 @@
+// AgentIQ Technologies marketing site: one page, section-per-file under components/sections.
 import { Ambient } from "@/components/ambient";
 import { Nav } from "@/components/nav";
 import { Hero } from "@/components/hero";
