@@ -1,26 +1,374 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
+@custom-variant light (&:where(.light, .light *));
+
+/* Dark is the default. .light on <html> flips the tokens; the product stills
+   keep their own fixed dark/light chrome so they always read as screenshots. */
+:root,
+.dark {
+  color-scheme: dark;
+  --page: #05070d;
+  --page-2: #080b14;
+  --panel: #0b0f1a;
+  --line: #26314a;
+  --body-text: #f2f6ff;
+  --muted: #a7b6cf;
+  --grid: rgba(140, 170, 220, 0.06);
+  --chip: rgba(255, 255, 255, 0.05);
+  --chip-line: rgba(255, 255, 255, 0.14);
+  --heading: #ffffff;
+  --accent: #4c8dff;
+  --accent-soft: #7ab4ff;
+  /* Filled-button background: darker than --accent so white labels pass AA. */
+  --accent-solid: #2f6fe0;
+  --accent-mint: #10b981;
+  --accent-violet: #8b5cf6;
+  --accent-amber: #f59e0b;
+  /* Product stills (dashboard/phone mockups) follow the site theme. */
+  --still-bg: #0b0f1a;
+  --still-bezel: #05070d;
+  --still-line: rgba(255, 255, 255, 0.1);
+  --still-chip: rgba(255, 255, 255, 0.05);
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
+.light {
+  color-scheme: light;
+  --page: #f4f7fc;
+  --page-2: #e9eefa;
+  --panel: #ffffff;
+  --line: #ccd6e8;
+  --body-text: #0b1220;
+  --muted: #40506b;
+  --grid: rgba(60, 90, 150, 0.09);
+  --chip: rgba(15, 23, 41, 0.05);
+  --chip-line: rgba(15, 23, 41, 0.14);
+  --heading: #050b16;
+  /* Deepened so accent-coloured text has enough luminance on a light page. */
+  --accent: #1d5fd8;
+  --accent-soft: #2b6ce0;
+  --accent-solid: #1d5fd8;
+  --accent-mint: #0a7a58;
+  --accent-violet: #6d3fd4;
+  --accent-amber: #a25a06;
+  --still-bg: #ffffff;
+  --still-bezel: #ccd6e8;
+  --still-line: rgba(15, 23, 41, 0.12);
+  --still-chip: rgba(15, 23, 41, 0.05);
+}
+
+@theme {
   --font-sans: var(--font-geist-sans);
   --font-mono: var(--font-geist-mono);
+
+  --animate-float: float 9s ease-in-out infinite;
+  --animate-float-slow: float 14s ease-in-out infinite;
+  --animate-marquee: marquee 38s linear infinite;
+  --animate-marquee-rev: marquee-rev 32s linear infinite;
+  --animate-pulse-ring: pulse-ring 2.6s cubic-bezier(0.2, 0.8, 0.2, 1) infinite;
+  --animate-sweep: sweep 4.5s ease-in-out infinite;
+  --animate-blip: blip 3.2s ease-in-out infinite;
+  --animate-drift: drift 24s linear infinite;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+@keyframes float {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+  50% {
+    transform: translate3d(0, -14px, 0);
   }
 }
 
+@keyframes marquee {
+  from {
+    transform: translate3d(0, 0, 0);
+  }
+  to {
+    transform: translate3d(-50%, 0, 0);
+  }
+}
+
+@keyframes marquee-rev {
+  from {
+    transform: translate3d(-50%, 0, 0);
+  }
+  to {
+    transform: translate3d(0, 0, 0);
+  }
+}
+
+@keyframes pulse-ring {
+  0% {
+    transform: scale(0.6);
+    opacity: 0.7;
+  }
+  70% {
+    opacity: 0;
+  }
+  100% {
+    transform: scale(2.4);
+    opacity: 0;
+  }
+}
+
+@keyframes sweep {
+  0% {
+    transform: translateX(-60%);
+    opacity: 0;
+  }
+  25% {
+    opacity: 0.9;
+  }
+  100% {
+    transform: translateX(160%);
+    opacity: 0;
+  }
+}
+
+@keyframes blip {
+  0%,
+  100% {
+    opacity: 0.25;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes drift {
+  from {
+    background-position: 0 0;
+  }
+  to {
+    background-position: 64px 64px;
+  }
+}
+
+html {
+  font-size: 17px;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+}
+
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  background-color: var(--page);
+  color: var(--body-text);
+  font-family: var(--font-sans), ui-sans-serif, system-ui, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+::selection {
+  background: color-mix(in oklab, var(--accent) 45%, transparent);
+  color: #fff;
+}
+
+/* Fine grid, the console motif borrowed from the product's own surfaces. */
+.grid-surface {
+  background-image: linear-gradient(to right, var(--grid) 1px, transparent 1px),
+    linear-gradient(to bottom, var(--grid) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+/* Theme-driven colour utilities.
+   Declared directly rather than via theme tokens: the Turbopack CSS pipeline
+   here prunes custom `--color-*` theme entries, which silently dropped every
+   `text-ink-2` / `text-mist` / `bg-panel` class and left text uncoloured. */
+@layer utilities {
+  .text-ink-2,
+  .text-body,
+  .text-heading {
+    /* Text colour, not --page-2: the "-2" step is a BACKGROUND shade and using
+       it for text made headings almost invisible in both themes. */
+    color: var(--body-text);
+  }
+  .text-ink {
+    color: var(--page);
+  }
+  .text-mist {
+    color: var(--muted);
+  }
+  .text-panel {
+    color: var(--panel);
+  }
+  .text-azure {
+    color: var(--accent);
+  }
+  .text-azure-2 {
+    color: var(--accent-soft);
+  }
+  .text-mint {
+    color: var(--accent-mint);
+  }
+  .text-violet {
+    color: var(--accent-violet);
+  }
+  .text-amber {
+    color: var(--accent-amber);
+  }
+
+  .bg-ink {
+    background-color: var(--page);
+  }
+  .bg-ink-2 {
+    background-color: var(--page-2);
+  }
+  .bg-panel {
+    background-color: var(--panel);
+  }
+  .bg-azure {
+    background-color: var(--accent);
+  }
+  .bg-azure-solid {
+    background-color: var(--accent-solid);
+  }
+  .bg-mint {
+    background-color: var(--accent-mint);
+  }
+  .bg-violet {
+    background-color: var(--accent-violet);
+  }
+
+  .border-line {
+    border-color: var(--line);
+  }
+}
+
+/*
+ * Product stills follow the site theme.
+ * The mockups were authored with literal dark hexes (#0b0f1a, #0d1220, ...) so
+ * they always read as screenshots. In light mode those become near-black cards
+ * on a near-white page, which reads as broken rather than deliberate. This
+ * remaps the still palette per theme so every card, sidebar and panel is
+ * legible in both modes - one rule, applied across every component.
+ */
+[data-still] {
+  --still-panel: #0d1220;
+  --still-panel-2: #111828;
+  --still-head: #090d17;
+  --still-border: #26314a;
+  --still-text: #e8eefb;
+  --still-dim: #a7b6cf;
+  --still-faint: #7f8da8;
+}
+
+.light [data-still] {
+  --still-panel: #ffffff;
+  --still-panel-2: #eef2f9;
+  --still-head: #f0f3fa;
+  --still-border: #ccd6e8;
+  --still-text: #0b1220;
+  --still-dim: #44536e;
+  --still-faint: #5d6d88;
+}
+
+/*
+ * The mockups lean on `text-white` and `text-white/NN` for hierarchy. On a
+ * light still those are invisible, so inside [data-still] white text is
+ * redirected to the themed palette. Attribute selectors are pruned by the CSS
+ * optimizer here, so each opacity step is listed as its own class.
+ */
+[data-still] .text-white,
+[data-still] .text-white\/85,
+[data-still] .text-white\/80 {
+  color: var(--still-text);
+}
+
+[data-still] .text-white\/70,
+[data-still] .text-white\/60 {
+  color: var(--still-dim);
+}
+
+[data-still] .text-white\/55,
+[data-still] .text-white\/50,
+[data-still] .text-white\/45,
+[data-still] .text-white\/40,
+[data-still] .text-white\/35,
+[data-still] .text-white\/25,
+[data-still] .text-white\/20 {
+  /* Explicit colour, not a --still-faint token: the optimizer drops custom
+     properties it considers unused, which silently removed the value. */
+  color: var(--still-dim);
+  opacity: 0.82;
+}
+
+/* White stays white where it sits on a saturated fill or a dark scrim in BOTH
+   themes: detection labels, the REC bar, camera HUD. Matched against the same
+   opacity utilities so it also resets the 0.82 dimming applied above. */
+[data-still] .on-accent,
+[data-still] .on-accent.text-white,
+[data-still] .on-accent.text-white\/85,
+[data-still] .on-accent.text-white\/80,
+[data-still] .on-accent.text-white\/70,
+[data-still] .on-accent.text-white\/60,
+[data-still] .on-accent.text-white\/55,
+[data-still] .on-accent.text-white\/50,
+[data-still] .on-accent.text-white\/45,
+[data-still] .on-accent.text-white\/40,
+[data-still] .on-accent.text-white\/35,
+[data-still] .on-accent.text-white\/25,
+[data-still] .on-accent.text-white\/20 {
+  color: #ffffff;
+  opacity: 1;
+}
+
+.dot-surface {
+  background-image: radial-gradient(rgba(140, 170, 220, 0.16) 1px, transparent 1px);
+  background-size: 22px 22px;
+}
+
+.text-gradient {
+  background: linear-gradient(100deg, #ffffff 8%, #bcd6ff 46%, #6ea8ff 78%, #9d7bff 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.light .text-gradient {
+  background: linear-gradient(100deg, #0b1220 4%, #1d4ed8 42%, #2563eb 72%, #7c3aed 100%);
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.mask-fade-x {
+  mask-image: linear-gradient(to right, transparent, #000 8%, #000 92%, transparent);
+}
+
+.mask-fade-b {
+  mask-image: linear-gradient(to bottom, #000 55%, transparent 100%);
+}
+
+/* Scroll reveal: elements start hidden, .is-in is added by the observer. */
+[data-reveal] {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+  transition:
+    opacity 0.9s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.9s cubic-bezier(0.16, 1, 0.3, 1);
+  transition-delay: var(--reveal-delay, 0ms);
+  will-change: opacity, transform;
+}
+
+[data-reveal].is-in {
+  opacity: 1;
+  transform: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+  [data-reveal] {
+    opacity: 1;
+    transform: none;
+  }
 }
