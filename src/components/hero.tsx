@@ -2,6 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { DesktopFrame, PhoneFrame } from "./device-frame";
+import { HeroFunnel } from "./hero-funnel";
 import { AdminCommandCentre } from "./screens/admin-command-centre";
 import { CitizenHome } from "./screens/citizen";
 
@@ -51,6 +52,12 @@ function LiveStrip() {
 export function Hero({ children }: { children?: React.ReactNode }) {
   return (
     <section className="relative overflow-hidden pt-28 pb-16 sm:pt-36">
+      <HeroFunnel />
+      {/* Scrim: keeps headline contrast stable over the moving backdrop in both modes. */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-x-0 top-0 -z-10 h-[34rem] bg-[radial-gradient(ellipse_58%_46%_at_50%_14%,var(--page)_0%,color-mix(in_oklab,var(--page)_72%,transparent)_52%,transparent_78%)]"
+      />
       <div aria-hidden="true" className="absolute inset-x-0 top-0 -z-10 h-[42rem] bg-[radial-gradient(ellipse_60%_50%_at_50%_0%,rgba(76,141,255,0.22),transparent_70%)]" />
 
       <div className="mx-auto max-w-7xl px-5 sm:px-8">
